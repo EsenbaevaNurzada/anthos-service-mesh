@@ -1,86 +1,86 @@
 data "google_client_config" "current" {}
 
-data "google_container_engine_versions" "default" {
-  location = var.location
-}
+# data "google_container_engine_versions" "default" {
+#   location = var.location
+# }
 
 data "google_container_engine_versions" "private_cluster" {
   location = var.private_cluster_location
 }
 
-resource "google_container_cluster" "gke" {
-  name                     = var.cluster_name
-  location                 = var.location
-  remove_default_node_pool = true
-  initial_node_count       = 1
-  min_master_version       = data.google_container_engine_versions.default.latest_master_version
-  network                  = var.network_name
-  subnetwork               = var.subnet_name
-  ip_allocation_policy {
-    cluster_ipv4_cidr_block = ""
-    services_ipv4_cidr_block = ""
-  }
-  // Use ABAC until official Kubernetes plugin supports RBAC.
-  enable_legacy_abac = true
-}
+# resource "google_container_cluster" "gke" {
+#   name                     = var.cluster_name
+#   location                 = var.location
+#   remove_default_node_pool = true
+#   initial_node_count       = 1
+#   min_master_version       = data.google_container_engine_versions.default.latest_master_version
+#   network                  = var.network_name
+#   subnetwork               = var.subnet_name
+#   ip_allocation_policy {
+#     cluster_ipv4_cidr_block = ""
+#     services_ipv4_cidr_block = ""
+#   }
+#   // Use ABAC until official Kubernetes plugin supports RBAC.
+#   enable_legacy_abac = true
+# }
 
 
 #######################################################
 
-resource "google_container_node_pool" "current" {
-  for_each       = var.node_pools
-  project        = var.project_id
-  cluster        = google_container_cluster.gke.id
-  name           = each.key
-  # version        = google_container_cluster.gke.min_master_version                   
-  location       = google_container_cluster.gke.location
-  node_locations = lookup(each.value, "node_locations", null)
-  initial_node_count = lookup(each.value, "initial_node_count", 1)
+# resource "google_container_node_pool" "current" {
+#   for_each       = var.node_pools
+#   project        = var.project_id
+#   cluster        = google_container_cluster.gke.id
+#   name           = each.key
+#   # version        = google_container_cluster.gke.min_master_version                   
+#   location       = google_container_cluster.gke.location
+#   node_locations = lookup(each.value, "node_locations", null)
+#   initial_node_count = lookup(each.value, "initial_node_count", 1)
 
-  dynamic "autoscaling" {
-    for_each = lookup(each.value, "autoscaling", true) ? [each.value] : []
-    content {
-      min_node_count = lookup(autoscaling.value, "min_count", 1)
-      max_node_count = lookup(autoscaling.value, "max_count", 100)
-    }
-  }
+#   dynamic "autoscaling" {
+#     for_each = lookup(each.value, "autoscaling", true) ? [each.value] : []
+#     content {
+#       min_node_count = lookup(autoscaling.value, "min_count", 1)
+#       max_node_count = lookup(autoscaling.value, "max_count", 100)
+#     }
+#   }
 
-  upgrade_settings {
-    max_surge       = lookup(each.value, "max_surge", 1)
-    max_unavailable = lookup(each.value, "max_unavailable", 0)
-  }
+#   upgrade_settings {
+#     max_surge       = lookup(each.value, "max_surge", 1)
+#     max_unavailable = lookup(each.value, "max_unavailable", 0)
+#   }
 
-   management {
-    auto_repair  = lookup(each.value, "auto_repair", true)
-    auto_upgrade = lookup(each.value, "auto_upgrade", false)
-  }
+#    management {
+#     auto_repair  = lookup(each.value, "auto_repair", true)
+#     auto_upgrade = lookup(each.value, "auto_upgrade", false)
+#   }
 
-  node_config {
-    local_ssd_count  = lookup(each.value, "local_ssd_count", 0)
-    disk_size_gb     = lookup(each.value, "disk_size_gb", 100)
-    disk_type        = lookup(each.value, "disk_type", "pd-standard")
-    min_cpu_platform = lookup(each.value, "min_cpu_platform", "")
-    image_type       = lookup(each.value, "image_type", "COS_CONTAINERD")
-    machine_type     = lookup(each.value, "machine_type", "e2-medium")
-    preemptible      = lookup(each.value, "preemptible", false)
-    # spot             = lookup(each.value, "spot", false)
-    shielded_instance_config {
-      enable_secure_boot          = lookup(each.value, "enable_secure_boot", false)
-      enable_integrity_monitoring = lookup(each.value, "enable_integrity_monitoring", true)
-    }
-  }
-    lifecycle {
-      ignore_changes = [initial_node_count]
-   }
-}
+#   node_config {
+#     local_ssd_count  = lookup(each.value, "local_ssd_count", 0)
+#     disk_size_gb     = lookup(each.value, "disk_size_gb", 100)
+#     disk_type        = lookup(each.value, "disk_type", "pd-standard")
+#     min_cpu_platform = lookup(each.value, "min_cpu_platform", "")
+#     image_type       = lookup(each.value, "image_type", "COS_CONTAINERD")
+#     machine_type     = lookup(each.value, "machine_type", "e2-medium")
+#     preemptible      = lookup(each.value, "preemptible", false)
+#     # spot             = lookup(each.value, "spot", false)
+#     shielded_instance_config {
+#       enable_secure_boot          = lookup(each.value, "enable_secure_boot", false)
+#       enable_integrity_monitoring = lookup(each.value, "enable_integrity_monitoring", true)
+#     }
+#   }
+#     lifecycle {
+#       ignore_changes = [initial_node_count]
+#    }
+# }
 
-provider "kubernetes" {
-  host                   = google_container_cluster.gke.endpoint
-  token                  = data.google_client_config.current.access_token
-  client_certificate     = base64decode(google_container_cluster.gke.master_auth.0.client_certificate)
-  client_key             = base64decode(google_container_cluster.gke.master_auth.0.client_key)
-  cluster_ca_certificate = base64decode(google_container_cluster.gke.master_auth.0.cluster_ca_certificate)
-}
+# provider "kubernetes" {
+#   host                   = google_container_cluster.gke.endpoint
+#   token                  = data.google_client_config.current.access_token
+#   client_certificate     = base64decode(google_container_cluster.gke.master_auth.0.client_certificate)
+#   client_key             = base64decode(google_container_cluster.gke.master_auth.0.client_key)
+#   cluster_ca_certificate = base64decode(google_container_cluster.gke.master_auth.0.cluster_ca_certificate)
+# }
 
 # provider "kubernetes" {
 #   host                   = google_container_cluster.private_cluster.endpoint

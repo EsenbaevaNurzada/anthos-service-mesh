@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"gke_cluster","Source":"../../../modules/gke_cluster","Dir":"../../../modules/gke_cluster"},{"Key":"hub","Source":"registry.terraform.io/terraform-google-modules/kubernetes-engine/google//modules/fleet-membership","Version":"23.1.0","Dir":".terraform/modules/hub/modules/fleet-membership"}]}

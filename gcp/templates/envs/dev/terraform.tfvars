@@ -1,4 +1,4 @@
-gcp_project_id = "inner-domain-361317"
+gcp_project_id = ""
 
 ######################################
 ########## SERVICE ACCOUNTS ##########

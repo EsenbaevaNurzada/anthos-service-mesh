@@ -1,6 +1,6 @@
-terraform {
-  backend "gcs" {
-    bucket = "ddoc-sandbox-project-envs-tfstate"
-    prefix = "dev"
-  }
-}
+# terraform {
+#   backend "gcs" {
+#     bucket = "ddoc-sandbox-project-envs-tfstate"
+#     prefix = "dev"
+#   }
+# }
